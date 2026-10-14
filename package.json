@@ -1,0 +1,11 @@
+{
+  "name": "reka-openclaw",
+  "private": true,
+  "description": "Development scripts for the Reka provider plugin for OpenClaw",
+  "scripts": {
+    "setup": "npm ci --ignore-scripts --prefix runtime && ln -sfn ../runtime/node_modules plugin/node_modules",
+    "test": "npm test --prefix plugin && npm test --prefix runtime",
+    "refresh-catalog": "node scripts/refresh-catalog.mjs"
+  },
+  "engines": { "node": ">=24.16.0 <25 || >=26.1.0" }
+}

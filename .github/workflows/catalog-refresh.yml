@@ -1,0 +1,80 @@
+name: Catalog snapshot refresh
+
+# Refreshes the bundled starter snapshot (plugin/catalog/reka-models.json) from
+# Reka's authenticated /v1/models and opens a PR with any change. The plugin
+# already reads the live catalog at runtime; this keeps the offline fallback and
+# starter models current for the next release.
+#
+# No-op unless the REKA_CATALOG_API_KEY secret is set. Listing models is not an
+# inference call. PRs opened with GITHUB_TOKEN do not trigger CI on their own;
+# run CI on the PR manually (workflow_dispatch) before merging.
+
+on:
+  schedule:
+    # Mondays 06:52 UTC, weekly.
+    - cron: "52 6 * * 1"
+  workflow_dispatch: {}
+
+concurrency:
+  group: catalog-refresh
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    name: Refresh catalog snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check REKA_CATALOG_API_KEY is configured
+        id: guard
+        env:
+          REKA_API_KEY: ${{ secrets.REKA_CATALOG_API_KEY }}
+        run: |
+          if [ -z "${REKA_API_KEY}" ]; then
+            echo "REKA_CATALOG_API_KEY secret is not set; skipping."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        if: steps.guard.outputs.enabled == 'true'
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        if: steps.guard.outputs.enabled == 'true'
+        with:
+          node-version: "26.8.1"
+          cache: npm
+          cache-dependency-path: runtime/package-lock.json
+      - name: Refresh snapshot from /v1/models
+        if: steps.guard.outputs.enabled == 'true'
+        env:
+          REKA_API_KEY: ${{ secrets.REKA_CATALOG_API_KEY }}
+        run: npm run refresh-catalog
+      - name: Validate the refreshed snapshot
+        if: steps.guard.outputs.enabled == 'true'
+        run: |
+          npm run setup
+          npm test --prefix plugin
+      - name: Open a PR with any snapshot drift
+        if: steps.guard.outputs.enabled == 'true'
+        uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412 # v7.0.9
+        with:
+          commit-message: "chore(catalog): refresh /v1/models snapshot"
+          branch: chore/catalog-snapshot-refresh
+          delete-branch: true
+          title: "chore(catalog): refresh /v1/models snapshot"
+          body: |
+            Automated refresh of the bundled starter snapshot from Reka's
+            authenticated `GET /v1/models`.
+
+            The plugin already reads the live list at runtime. This snapshot is
+            the offline fallback and the starter models shown before discovery
+            finishes, so it ships with the next release. Check the added and
+            removed models in the diff, run CI on this branch, then merge.
+          add-paths: |
+            plugin/catalog/reka-models.json

@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+runtime_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+project_dir=$(dirname -- "$runtime_dir")
+
+# All state remains in this project unless explicitly overridden by the caller.
+export OPENCLAW_STATE_DIR="${OPENCLAW_STATE_DIR:-$project_dir/state}"
+export OPENCLAW_CONFIG_PATH="${OPENCLAW_CONFIG_PATH:-$OPENCLAW_STATE_DIR/openclaw.json}"
+
+node_bin=$(command -v "${REKA_OPENCLAW_NODE:-node}" || true)
+if [ -z "$node_bin" ] || ! "$node_bin" -e 'const [major, minor] = process.versions.node.split(".").map(Number); process.exit((major === 24 && minor >= 16) || (major === 26 && minor >= 1) || major > 26 ? 0 : 1)' 2>/dev/null; then
+  echo 'OpenClaw requires Node >=24.16 <25 or >=26.1. Set REKA_OPENCLAW_NODE to a compatible executable.' >&2
+  exit 1
+fi
+# Prepend an absolute directory only; a bare "." would let the cwd shadow real tools.
+case $node_bin in
+  /*) ;;
+  *) node_bin="$(pwd)/$node_bin" ;;
+esac
+export PATH="$(dirname -- "$node_bin"):$PATH"
+exec "$node_bin" "$runtime_dir/node_modules/openclaw/openclaw.mjs" "$@"

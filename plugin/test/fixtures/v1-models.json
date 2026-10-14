@@ -1,0 +1,41 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "qwen3.8-27b", "object": "model", "created": 1786978800, "owned_by": "reka",
+      "name": "Qwen3.8 27B", "description": "Synthetic fixture row",
+      "input_modalities": ["text", "image", "video"], "output_modalities": ["text"],
+      "context_length": 262144, "max_output_length": 131072,
+      "pricing": { "prompt": "0.0000002", "completion": "0.0000025", "image": "0", "request": "0", "input_cache_read": "0.00000002" },
+      "supported_features": ["tools", "reasoning"], "is_ready": true
+    },
+    {
+      "id": "deepseek4-flash", "object": "model", "created": 1786978800, "owned_by": "reka",
+      "name": "DeepSeek 4 Flash",
+      "input_modalities": ["text"], "output_modalities": ["text"],
+      "context_length": 1048576, "max_output_length": 131072,
+      "pricing": { "prompt": "0.0000001", "completion": "0.0000004", "image": "0", "request": "0", "input_cache_read": "0" },
+      "supported_features": ["tools", "reasoning"], "is_ready": true
+    },
+    {
+      "id": "brand-new-model", "object": "model", "created": 1790000000, "owned_by": "reka",
+      "supported_features": ["tools"]
+    },
+    {
+      "id": "paused-model", "object": "model", "created": 1, "owned_by": "reka",
+      "supported_features": ["tools", "reasoning"], "is_ready": false
+    },
+    {
+      "id": "no-tools-model", "object": "model", "created": 1, "owned_by": "reka",
+      "supported_features": ["reasoning"]
+    },
+    {
+      "id": "image-out-model", "object": "model", "created": 1, "owned_by": "reka",
+      "output_modalities": ["image"], "supported_features": ["tools"]
+    },
+    {
+      "id": "deepseek4-flash", "object": "model", "created": 1, "owned_by": "reka",
+      "name": "Duplicate row is ignored", "supported_features": ["tools"]
+    }
+  ]
+}

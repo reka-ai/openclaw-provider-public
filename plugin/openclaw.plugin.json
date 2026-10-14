@@ -1,0 +1,33 @@
+{
+  "id": "reka",
+  "name": "Reka",
+  "version": "0.1.0",
+  "categories": ["models"],
+  "description": "Reka open-weight models with API key onboarding and a model picker that follows your Reka account",
+  "providers": ["reka"],
+  "setup": { "providers": [{ "id": "reka", "envVars": ["REKA_API_KEY"] }] },
+  "providerAuthChoices": [{
+    "provider": "reka",
+    "method": "api-key",
+    "choiceId": "reka-api-key",
+    "choiceLabel": "Reka API key",
+    "groupId": "reka",
+    "groupLabel": "Reka",
+    "cliFlag": "--reka-api-key",
+    "cliOption": "--reka-api-key <key>",
+    "cliDescription": "Reka API key"
+  }],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "baseUrl": {
+        "type": "string",
+        "description": "Optional explicitly configured loopback proxy for bounded local testing. Defaults to https://api.reka.ai/v1."
+      }
+    }
+  },
+  "uiHints": {
+    "baseUrl": { "label": "Reka endpoint (optional local proxy)", "placeholder": "https://api.reka.ai/v1", "advanced": true }
+  }
+}

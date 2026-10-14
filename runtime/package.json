@@ -1,0 +1,22 @@
+{
+  "name": "reka-openclaw-runtime",
+  "version": "1.0.0",
+  "description": "Pinned, isolated OpenClaw host for the Reka provider integration",
+  "private": true,
+  "scripts": {
+    "openclaw": "./openclaw",
+    "verify": "./openclaw --version",
+    "test": "node test-host.mjs && node test-distribution.mjs && node test-managed-install.mjs && node test-agent.mjs",
+    "test:host": "node test-host.mjs",
+    "test:distribution": "node test-distribution.mjs",
+    "test:managed-install": "node test-managed-install.mjs",
+    "test:agent": "node test-agent.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "openclaw": "2026.10.2"
+  }
+}
