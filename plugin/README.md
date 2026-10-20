@@ -2,12 +2,12 @@
 
 Adds Reka as a provider in OpenClaw's API-key setup and model picker, with **DeepSeek 4 Flash** recommended for text and tools. Requests use OpenClaw's OpenAI-compatible chat transport at `https://api.reka.ai/v1`.
 
-Requires **OpenClaw 2026.10.2 or newer** and Node **24.16+ within 24.x, or 26.1+**. Published on ClawHub by Reka as `@reka/openclaw-provider`.
+Requires **OpenClaw 2026.10.2 or newer** and Node **24.16+ within 24.x, or 26.1+**. Published on ClawHub by Reka as `openclaw-reka-provider`.
 
 ## Install and sign in
 
 ```sh
-openclaw plugins install clawhub:@reka/openclaw-provider
+openclaw plugins install clawhub:openclaw-reka-provider
 openclaw models auth login --provider reka --method api-key --set-default
 openclaw config set agents.defaults.thinkingDefault off
 ```

@@ -1,0 +1,67 @@
+name: Release
+
+# Publishes the plugin to ClawHub when a version tag (vX.Y.Z) is pushed.
+# Runs in the "release" environment: add required reviewers there, and store the
+# ClawHub API token as the environment secret CLAWHUB_TOKEN (create it with
+# `clawhub login` then `clawhub token`, from an account in the reka org).
+# New releases stay hidden on ClawHub until its review finishes.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to ClawHub
+    runs-on: ubuntu-latest
+    environment: release
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "26.8.1"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            runtime/package-lock.json
+      - name: Check the tag matches the plugin version and changelog
+        run: |
+          version=$(node -p "require('./plugin/package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match plugin/package.json version $version"; exit 1
+          fi
+          manifest_version=$(node -p "require('./plugin/openclaw.plugin.json').version")
+          if [ "$manifest_version" != "$version" ]; then
+            echo "plugin/openclaw.plugin.json version $manifest_version does not match plugin/package.json version $version"; exit 1
+          fi
+          if ! grep -q "^## \[$version\] - [0-9]" plugin/CHANGELOG.md; then
+            echo "plugin/CHANGELOG.md needs a dated entry: ## [$version] - YYYY-MM-DD"; exit 1
+          fi
+      - name: Install
+        run: npm run setup
+      - name: Tests (loopback only, dummy keys)
+        run: npm test
+      - name: Plugin Inspector
+        run: npx clawhub package validate ./plugin --openclaw-version 2026.10.2 --out reports/release
+      - name: Publish
+        env:
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+          CLAWHUB_CONFIG_PATH: ${{ runner.temp }}/clawhub/config.json
+        run: |
+          if [ -z "$CLAWHUB_TOKEN" ]; then
+            echo "Set CLAWHUB_TOKEN in the release environment"; exit 1
+          fi
+          npx clawhub login --token "$CLAWHUB_TOKEN" --no-input
+          npx clawhub package publish ./plugin --family code-plugin --owner reka \
+            --source-repo "$GITHUB_REPOSITORY" --source-commit "$GITHUB_SHA" --source-ref "$GITHUB_REF_NAME" \
+            --source-path plugin --wait --no-input

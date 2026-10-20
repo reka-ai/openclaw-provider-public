@@ -1,5 +1,5 @@
 {
-  "name": "@reka/openclaw-provider",
+  "name": "openclaw-reka-provider",
   "version": "0.1.0",
   "description": "Reka model provider, API key onboarding, and model picker for OpenClaw",
   "type": "module",
@@ -13,7 +13,7 @@
   },
   "bugs": { "url": "https://github.com/reka-ai/openclaw-provider-public/issues" },
   "keywords": ["openclaw", "openclaw-plugin", "reka", "model-provider", "llm"],
-  "files": ["index.js", "src/", "catalog/", "assets/", "openclaw.plugin.json", "README.md", "LICENSE"],
+  "files": ["index.js", "src/", "catalog/", "assets/", "openclaw.plugin.json", "README.md", "CHANGELOG.md", "LICENSE"],
   "engines": { "node": ">=24.16.0 <25 || >=26.1.0" },
   "scripts": { "test": "node --test test/*.test.js" },
   "peerDependencies": { "openclaw": ">=2026.10.2" },

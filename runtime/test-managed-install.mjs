@@ -30,7 +30,7 @@ const installedRoot = realpathSync(inspection.plugin.rootDir);
 assert.ok(installedRoot.startsWith(realpathSync(profile.state) + path.sep), 'Provider escaped isolated state');
 assert.match(installedRoot, /[/\\]npm[/\\]projects[/\\]/, 'Provider did not use a managed npm project');
 const installedPackage = JSON.parse(readFileSync(path.join(installedRoot, 'package.json'), 'utf8'));
-assert.equal(installedPackage.name, '@reka/openclaw-provider');
+assert.equal(installedPackage.name, 'openclaw-reka-provider');
 const catalog = cliJson(openclaw(profile, ['models', 'list', '--all', '--provider', 'reka', '--refresh', '--json']));
 assert.equal(catalog.count, snapshotIds().length);
 assert.ok(catalog.models.some((model) => model.key === 'reka/deepseek4-flash'));

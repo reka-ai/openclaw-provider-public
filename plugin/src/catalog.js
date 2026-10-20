@@ -22,13 +22,19 @@ const perMillion = (value) => {
 const positiveInt = (value) => (Number.isInteger(value) && value > 0 ? value : undefined);
 const strings = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === "string") : []);
 
+const MODEL_ID = /^[\w.:-]+$/;
+
+export function isValidModelId(id) {
+  return typeof id === "string" && id.length <= 128 && MODEL_ID.test(id);
+}
+
 /**
  * OpenClaw is an agent host, so only ready chat models that can call tools are
  * offered. Rows follow the /v1/models contract: every listing field except
  * `id` is optional and omitted when undeclared.
  */
 export function isUsableRow(row) {
-  if (!row || typeof row.id !== "string" || !/^[\w.:-]+$/.test(row.id)) return false;
+  if (!row || !isValidModelId(row.id)) return false;
   if (row.is_ready === false) return false;
   const output = strings(row.output_modalities);
   if (output.length && !output.includes("text")) return false;
@@ -85,6 +91,19 @@ export function modelsFromRows(rows) {
 
 export function snapshotModels() {
   return modelsFromRows(snapshot.data);
+}
+
+/**
+ * Synchronous, network-free lookup for dynamic model resolution: the last live
+ * listing for this endpoint, else the bundled snapshot. Unknown but well-formed
+ * ids get a conservative tool-capable text definition, so a model Reka adds
+ * after this release still works by id; Reka itself answers if it does not exist.
+ */
+export function resolveKnownModel(baseUrl, id) {
+  if (!isValidModelId(id)) return null;
+  const live = cache?.source === "live" && cache.key.startsWith(`${baseUrl}\0`) ? cache.models : undefined;
+  const known = (live ?? snapshotModels()).find((model) => model.id === id);
+  return known ? structuredClone(known) : toModel({ id, supported_features: ["tools"] });
 }
 
 let cache;

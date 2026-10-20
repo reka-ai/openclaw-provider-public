@@ -54,7 +54,10 @@ const profile = isolatedProfile('agent', (state) => ({
   plugins: { allow: ['reka'], load: { paths: [plugin] }, slots: { memory: 'none' }, entries: { reka: { enabled: true, config: { baseUrl } } } },
   agents: { defaults: {
     model: { primary: 'reka/qwen3.8-27b', fallbacks: [] },
-    models: { 'reka/qwen3.8-27b': { params: { maxTokens: 256, temperature: 0 } } },
+    models: {
+      'reka/qwen3.8-27b': { params: { maxTokens: 256, temperature: 0 } },
+      'reka/live-only-model': { params: { maxTokens: 256, temperature: 0 } },
+    },
     workspace: path.join(state, 'workspace'), skipBootstrap: true,
     thinkingDefault: 'off', reasoningDefault: 'off', utilityModel: '', heartbeat: { every: '0m' }, timeoutSeconds: 60,
   } },
@@ -112,6 +115,15 @@ try {
     assert.equal(request.body.stream, true);
     assert.ok((request.body.max_tokens ?? request.body.max_completion_tokens) <= 256);
   }
+
+  // A model that exists only in the live listing (not in the bundled starter
+  // list) is still usable by id in a new process, via resolveDynamicModel.
+  const before = requests.length;
+  await openclaw(['agent', '--local', '--agent', 'main', '--session-key', 'agent:main:dynamic-model', '--model', 'reka/live-only-model', '--message', 'Call session_status, then give a one sentence confirmation.', '--thinking', 'off', '--json']);
+  const dynamic = requests.slice(before);
+  assert.ok(dynamic.length >= 1, 'The dynamic model made at least one request');
+  assert.ok(dynamic.every((request) => request.authorization && request.body.model === 'live-only-model'));
+  assert.ok(dynamic.every((request) => !('reasoning_effort' in request.body)), 'live-only-model declares no reasoning support');
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }

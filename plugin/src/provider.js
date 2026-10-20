@@ -1,5 +1,5 @@
 import { createProviderApiKeyAuthMethod, isNonSecretApiKeyMarker } from "openclaw/plugin-sdk/provider-auth";
-import { API_KEY_ENV, DEFAULT_MODEL, PROVIDER_ID, catalogRows, loadModels, resolveBaseUrl, snapshotModels } from "./catalog.js";
+import { API_KEY_ENV, DEFAULT_MODEL, PROVIDER_ID, catalogRows, loadModels, resolveBaseUrl, resolveKnownModel, snapshotModels } from "./catalog.js";
 
 // Env var names, including custom ones the SDK's marker list does not know.
 const ENV_VAR_NAME = /^[A-Z][A-Z0-9_]*$/;
@@ -78,6 +78,13 @@ export function createRekaProvider(pluginConfig = {}) {
       async run() {
         return { provider: { baseUrl, api: "openai-completions", models: snapshotModels() } };
       },
+    },
+    // Ids missing from the prepared catalog (for example a model Reka listed
+    // after this release, used with `--model reka/<id>`). Sync and offline.
+    resolveDynamicModel(ctx) {
+      if (ctx.provider && ctx.provider !== PROVIDER_ID) return null;
+      const model = resolveKnownModel(baseUrl, ctx.modelId);
+      return model ? { ...model, provider: PROVIDER_ID, api: "openai-completions", baseUrl } : null;
     },
   };
 }
