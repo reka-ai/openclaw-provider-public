@@ -234,6 +234,35 @@ test("live picker rows are labelled live and defer to static rows on failure", a
   assert.equal(await createRekaLiveCatalog({ baseUrl: "http://127.0.0.1:1/v1" })(auth("test-placeholder")), null);
 });
 
+test("dynamic model resolution covers bundled, listed and newer model ids offline", async (t) => {
+  const endpoint = await modelsEndpoint(t);
+  const provider = createRekaProvider({ baseUrl: endpoint.baseUrl });
+  const resolve = (modelId, providerId = "reka") => provider.resolveDynamicModel({ provider: providerId, modelId, modelRegistry: {} });
+  const runtimeFields = { provider: "reka", api: "openai-completions", baseUrl: endpoint.baseUrl };
+  const fromFixture = (id) => modelsFromRows(JSON.parse(fixture).data).find((m) => m.id === id);
+
+  // Before any listing: the bundled snapshot.
+  assert.deepEqual(resolve(DEFAULT_MODEL_ID), { ...snapshotModels().find((m) => m.id === DEFAULT_MODEL_ID), ...runtimeFields });
+  // A well-formed id nobody has listed yet gets a conservative tool-capable text model.
+  const unknown = resolve("model-released-next-month");
+  assert.equal(unknown.id, "model-released-next-month");
+  assert.deepEqual(unknown.input, ["text"]);
+  assert.equal(unknown.reasoning, false);
+  assert.equal(unknown.compat.supportsReasoningEffort, false);
+  assert.ok(unknown.maxTokens <= 8192 && unknown.contextWindow > 0);
+  assert.equal(unknown.baseUrl, endpoint.baseUrl);
+
+  // After a live listing, the listed metadata wins.
+  await provider.catalog.run(auth("test-placeholder"));
+  assert.deepEqual(resolve(DEFAULT_MODEL_ID), { ...fromFixture(DEFAULT_MODEL_ID), ...runtimeFields });
+  assert.deepEqual(resolve("brand-new-model"), { ...fromFixture("brand-new-model"), ...runtimeFields });
+
+  // Malformed ids and other providers resolve to nothing.
+  for (const bad of ["", "../etc/passwd", "a b", "x".repeat(129), undefined, 42]) assert.equal(resolve(bad), null, String(bad));
+  assert.equal(resolve(DEFAULT_MODEL_ID, "openai"), null);
+  assert.equal(endpoint.requests.length, 1, "Resolution never makes a network request");
+});
+
 test("fetchLiveModels refuses to list without a key", async () => {
   await assert.rejects(fetchLiveModels({ baseUrl: BASE_URL, apiKey: "" }), /API key is required/);
 });
