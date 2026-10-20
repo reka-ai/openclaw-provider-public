@@ -2,8 +2,13 @@
 
 A community provider plugin that adds Reka to [OpenClaw](https://docs.openclaw.ai): native API-key sign-in, a model picker fed by Reka's live `/v1/models`, and DeepSeek 4 Flash as the recommended default.
 
+```sh
+openclaw plugins install clawhub:openclaw-reka-provider
+```
+
 - **Users:** follow [docs/SETUP.md](docs/SETUP.md).
-- **Plugin details** (models, reasoning, config): [plugin/README.md](plugin/README.md).
+- **Plugin details** (models, reasoning, config): [plugin/README.md](plugin/README.md). Changes: [plugin/CHANGELOG.md](plugin/CHANGELOG.md).
+- **Security issues:** see [SECURITY.md](SECURITY.md).
 
 ## Layout
 
@@ -19,13 +24,16 @@ A community provider plugin that adds Reka to [OpenClaw](https://docs.openclaw.a
 Use Node 24.16+ (within 24.x) or 26.1+. CI runs Node 24 and 26.8.1 on Linux and macOS.
 
 ```sh
-npm run setup   # npm ci --ignore-scripts for the pinned host, then links plugin/node_modules to it
-npm test        # plugin unit/transport tests, then the four pinned-host suites
+npm run setup              # npm ci --ignore-scripts (root ClawHub CLI, then the pinned host); links plugin/node_modules
+npm test                   # plugin unit/transport tests, then the four pinned-host suites
+npm run clawhub:validate   # ClawHub's Plugin Inspector, static; does not run plugin code
 ```
 
 Tests use dummy keys and loopback servers only; they never call Reka or read a real key. The host suites also run OpenClaw in temporary profiles with their own `HOME`. The unit tests write nothing, though the SDK may read your `~/.openclaw` folder. Keep it that way: no real keys in tests, fixtures, logs or screenshots.
 
-The host suites cover loading from source, installing the packed archive, OpenClaw's managed `npm-pack:` install, and an agent run against a loopback stand-in for `api.reka.ai` (live `/v1/models` listing, a tool call, and a continuation turn).
+The host suites cover loading from source, installing the packed archive, OpenClaw's managed `npm-pack:` install, and an agent run against a loopback stand-in for `api.reka.ai` (live `/v1/models` listing, a tool call, a continuation turn, and a model used by id that is only in the live list).
+
+CI (`.github/workflows/ci.yml`) also runs ClawHub's Plugin Inspector against the tested and latest OpenClaw, and a publish dry run.
 
 ## Model catalog
 
@@ -42,17 +50,22 @@ npm run refresh-catalog
 
 ## Releasing
 
-The plugin is published on ClawHub by the `reka` owner as `openclaw-reka-provider` under the MIT license. ClawHub keeps a new release hidden until its security checks and verification finish.
+Releases publish to ClawHub as `openclaw-reka-provider` under the `reka` owner, from `.github/workflows/release.yml`. ClawHub keeps a new release hidden until its security checks and verification finish.
 
-1. Bump `version` in `plugin/package.json` and `plugin/openclaw.plugin.json`, refresh the snapshot (above), and make sure CI is green on the release commit.
-2. From a clean checkout of that commit, validate and preview:
+One-time setup:
 
-   ```sh
-   clawhub package validate ./plugin
-   clawhub package publish ./plugin --owner reka --source-repo reka-ai/openclaw-provider-public --source-commit "$(git rev-parse HEAD)" --source-path plugin --dry-run
-   ```
+1. A maintainer signs in with their own account (`npx clawhub login`) and creates the org publisher: `npx clawhub publisher create reka --display-name "Reka"`. Add other maintainers to the org on ClawHub instead of sharing a login.
+2. In this repository's settings, create the `release` environment with required reviewers, and add the environment secret `CLAWHUB_TOKEN` (from `npx clawhub token`).
 
-3. Publish the same command without `--dry-run`, adding `--wait` to block until ClawHub's checks finish.
+Each release:
+
+1. Bump `version` in `plugin/package.json` and `plugin/openclaw.plugin.json`, date its entry in `plugin/CHANGELOG.md` (`## [x.y.z] - YYYY-MM-DD`), and refresh the snapshot (above).
+2. Merge to `main` with CI green, then tag that commit: `git tag vx.y.z && git push origin vx.y.z`.
+3. The release workflow checks the tag against both versions and the changelog, runs the tests and the Plugin Inspector, then publishes with the source repo, commit and ref, and waits for ClawHub's checks.
 4. Install the listing into fresh OpenClaw state (`openclaw plugins install clawhub:openclaw-reka-provider`) and send one message before announcing it.
+
+To preview a release by hand, run `npm run clawhub:dry-run`; nothing is uploaded.
+
+After the first publish, ClawHub can trust the workflow through GitHub OIDC instead of a stored token: `npx clawhub package trusted-publisher set openclaw-reka-provider --repository reka-ai/openclaw-provider-public --workflow-filename release.yml --environment release`.
 
 A ClawHub listing makes the plugin installable and searchable; it does not add Reka to OpenClaw's built-in provider list. That is a separate conversation with the OpenClaw maintainers.

@@ -9,7 +9,7 @@ First public release.
 ### Added
 
 - Reka as an OpenClaw provider: API-key sign-in at OpenClaw's masked prompt (`REKA_API_KEY` or `--reka-api-key`), with DeepSeek 4 Flash as the recommended default.
-- A model list read from Reka's `GET /v1/models` with your key, so new Reka models appear without a plugin release. Only ready, tool-capable chat models are offered. Listing is free; it is not an inference call.
+- A model list read from Reka's `GET /v1/models` with your key, so new Reka models appear without a plugin release. Only ready, tool-capable chat models are offered. Listing is not an inference call and is not billed.
 - A bundled snapshot of the list for starter models and offline fallback.
 - Dynamic model resolution: any well-formed `reka/<model-id>` works by id, including models Reka lists after this release.
 - Per-model reasoning support: `reasoning_effort` is sent only to models that declare reasoning, using Reka's documented levels.
