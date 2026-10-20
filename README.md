@@ -42,7 +42,7 @@ npm run refresh-catalog
 
 ## Releasing
 
-The plugin is published on ClawHub by the `reka` owner as `@reka/openclaw-provider` under the MIT license. ClawHub keeps a new release hidden until its security checks and verification finish.
+The plugin is published on ClawHub by the `reka` owner as `openclaw-reka-provider` under the MIT license. ClawHub keeps a new release hidden until its security checks and verification finish.
 
 1. Bump `version` in `plugin/package.json` and `plugin/openclaw.plugin.json`, refresh the snapshot (above), and make sure CI is green on the release commit.
 2. From a clean checkout of that commit, validate and preview:
@@ -53,6 +53,6 @@ The plugin is published on ClawHub by the `reka` owner as `@reka/openclaw-provid
    ```
 
 3. Publish the same command without `--dry-run`, adding `--wait` to block until ClawHub's checks finish.
-4. Install the listing into fresh OpenClaw state (`openclaw plugins install clawhub:@reka/openclaw-provider`) and send one message before announcing it.
+4. Install the listing into fresh OpenClaw state (`openclaw plugins install clawhub:openclaw-reka-provider`) and send one message before announcing it.
 
 A ClawHub listing makes the plugin installable and searchable; it does not add Reka to OpenClaw's built-in provider list. That is a separate conversation with the OpenClaw maintainers.

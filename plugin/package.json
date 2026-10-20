@@ -1,5 +1,5 @@
 {
-  "name": "@reka/openclaw-provider",
+  "name": "openclaw-reka-provider",
   "version": "0.1.0",
   "description": "Reka model provider, API key onboarding, and model picker for OpenClaw",
   "type": "module",

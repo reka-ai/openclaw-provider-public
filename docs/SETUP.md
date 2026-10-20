@@ -13,10 +13,10 @@ If OpenClaw is not installed yet, follow the [official installation guide](https
 
 ## 1. Install the plugin
 
-Reka publishes the plugin on ClawHub as `@reka/openclaw-provider`:
+Reka publishes the plugin on ClawHub as `openclaw-reka-provider`:
 
 ```sh
-openclaw plugins install clawhub:@reka/openclaw-provider
+openclaw plugins install clawhub:openclaw-reka-provider
 ```
 
 OpenClaw asks you to accept the plugin's capabilities; review and accept. It prints `Installed plugin: reka` when it finishes. If a Gateway is already running, restart it through its existing service owner so it loads the plugin. For an OpenClaw-managed service, use `openclaw gateway restart`. [Plugin installation](https://docs.openclaw.ai/cli/plugins/install)
@@ -28,7 +28,7 @@ From a checkout of this repository:
 
 ```sh
 npm pack ./plugin
-openclaw plugins install npm-pack:./reka-openclaw-provider-0.1.0.tgz
+openclaw plugins install npm-pack:./openclaw-reka-provider-0.1.0.tgz
 ```
 
 `npm pack` prints the file name; 0.1.0 is the current version. OpenClaw warns that the source is outside ClawHub and asks about capabilities; review both. Updates from source mean pulling, packing and installing again with `--force`, since `openclaw plugins update` follows ClawHub or npm only.
