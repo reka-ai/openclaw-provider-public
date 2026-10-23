@@ -11,6 +11,9 @@ export const runtime = path.dirname(fileURLToPath(import.meta.url));
 export const project = path.dirname(runtime);
 export const plugin = path.join(project, 'plugin');
 
+/** OpenClaw version installed in runtime/node_modules: the locked pin, or the one CI swaps in. */
+export const hostVersion = JSON.parse(readFileSync(path.join(runtime, 'node_modules', 'openclaw', 'package.json'), 'utf8')).version;
+
 /** Model ids the bundled snapshot offers (tool-capable rows). */
 export function snapshotIds() {
   const snapshot = JSON.parse(readFileSync(path.join(plugin, 'catalog', 'reka-models.json'), 'utf8'));

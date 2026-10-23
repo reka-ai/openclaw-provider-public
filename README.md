@@ -15,13 +15,13 @@ openclaw plugins install clawhub:openclaw-reka-provider
 | Path | What it is |
 | --- | --- |
 | `plugin/` | The publishable package: `index.js`, `src/`, `catalog/reka-models.json` (bundled snapshot), manifest and tests |
-| `runtime/` | A pinned OpenClaw host (`openclaw@2026.10.2`, locked) and the suites that install and run the plugin in it |
+| `runtime/` | A pinned OpenClaw host (`openclaw@2026.10.6`, locked) and the suites that install and run the plugin in it |
 | `scripts/refresh-catalog.mjs` | Rewrites the bundled snapshot from `GET /v1/models` |
 | `docs/` | The setup guide and its screenshots |
 
 ## Development
 
-Use Node 24.16+ (within 24.x) or 26.1+. CI runs Node 24 and 26.8.1 on Linux and macOS.
+Use Node 24.22.1+ (within 24.x) or 26.12.1+, which the pinned OpenClaw 2026.10.6 requires. CI runs Node 24 and 26.12.1 on Linux and macOS, and repeats the suites on OpenClaw 2026.10.2, the oldest version the plugin supports.
 
 ```sh
 npm run setup              # npm ci --ignore-scripts (root ClawHub CLI, then the pinned host); links plugin/node_modules

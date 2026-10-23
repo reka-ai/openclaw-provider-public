@@ -5,12 +5,12 @@
   "scripts": {
     "setup": "npm ci --ignore-scripts && npm ci --ignore-scripts --prefix runtime && ln -sfn ../runtime/node_modules plugin/node_modules",
     "test": "npm test --prefix plugin && npm test --prefix runtime",
-    "clawhub:validate": "clawhub package validate ./plugin --openclaw-version 2026.10.2 --out reports/clawhub",
+    "clawhub:validate": "clawhub package validate ./plugin --openclaw-version 2026.10.6 --out reports/clawhub",
     "clawhub:dry-run": "clawhub package publish ./plugin --family code-plugin --owner reka-ai --source-path plugin --dry-run --no-input",
     "refresh-catalog": "node scripts/refresh-catalog.mjs"
   },
   "devDependencies": {
     "clawhub": "0.23.3"
   },
-  "engines": { "node": ">=24.16.0 <25 || >=26.1.0" }
+  "engines": { "node": ">=24.22.1 <25 || >=26.12.1" }
 }

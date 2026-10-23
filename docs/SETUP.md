@@ -2,7 +2,7 @@
 
 Connect Reka, start with DeepSeek 4 Flash, and switch models from chat.
 
-You need **OpenClaw 2026.10.2 or newer** and Node **24.16+ within 24.x, or 26.1+**. Have your API key ready from [Reka's developer portal](https://developer.reka.ai).
+You need **OpenClaw 2026.10.2 or newer**, on the Node version your OpenClaw release requires (2026.10.6 needs Node **24.22.1+ within 24.x, or 26.12.1+**). Have your API key ready from [Reka's developer portal](https://developer.reka.ai).
 
 ```sh
 openclaw --version
