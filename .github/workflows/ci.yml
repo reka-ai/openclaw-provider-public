@@ -63,6 +63,6 @@ jobs:
         run: npx clawhub package validate ./plugin --openclaw-version latest --out reports/latest
       - name: Publish dry run (nothing is uploaded)
         run: >-
-          npx clawhub package publish ./plugin --family code-plugin --owner reka
+          npx clawhub package publish ./plugin --family code-plugin --owner reka-ai
           --source-repo "$GITHUB_REPOSITORY" --source-commit "$GITHUB_SHA" --source-ref "$GITHUB_REF_NAME"
           --source-path plugin --dry-run --no-input

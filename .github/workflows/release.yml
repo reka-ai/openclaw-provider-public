@@ -2,8 +2,8 @@ name: Release
 
 # Publishes the plugin to ClawHub when a version tag (vX.Y.Z) is pushed.
 # Runs in the "release" environment: add required reviewers there, and store the
-# ClawHub API token as the environment secret CLAWHUB_TOKEN (create it with
-# `clawhub login` then `clawhub token`, from an account in the reka org).
+# ClawHub API token as the environment secret CLAWHUB_TOKEN (create a dedicated
+# token in ClawHub Settings -> API tokens, from an account in the reka-ai org).
 # New releases stay hidden on ClawHub until its review finishes.
 
 on:
@@ -62,6 +62,6 @@ jobs:
             echo "Set CLAWHUB_TOKEN in the release environment"; exit 1
           fi
           npx clawhub login --token "$CLAWHUB_TOKEN" --no-input
-          npx clawhub package publish ./plugin --family code-plugin --owner reka \
+          npx clawhub package publish ./plugin --family code-plugin --owner reka-ai \
             --source-repo "$GITHUB_REPOSITORY" --source-commit "$GITHUB_SHA" --source-ref "$GITHUB_REF_NAME" \
             --source-path plugin --wait --no-input

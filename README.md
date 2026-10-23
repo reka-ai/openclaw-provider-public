@@ -50,12 +50,12 @@ npm run refresh-catalog
 
 ## Releasing
 
-Releases publish to ClawHub as `openclaw-reka-provider` under the `reka` owner, from `.github/workflows/release.yml`. ClawHub keeps a new release hidden until its security checks and verification finish.
+Releases publish to ClawHub as `openclaw-reka-provider` under the `reka-ai` owner, from `.github/workflows/release.yml`. ClawHub keeps a new release hidden until its security checks and verification finish.
 
 One-time setup:
 
-1. A maintainer signs in with their own account (`npx clawhub login`) and creates the org publisher: `npx clawhub publisher create reka --display-name "Reka"`. Add other maintainers to the org on ClawHub instead of sharing a login.
-2. In this repository's settings, create the `release` environment with required reviewers, and add the environment secret `CLAWHUB_TOKEN` (from `npx clawhub token`).
+1. A maintainer signs in with their own account (`npx clawhub login`) and creates the org publisher: `npx clawhub publisher create reka-ai --display-name "Reka"`. Add other maintainers to the org on ClawHub instead of sharing a login.
+2. In this repository's settings, create the `release` environment with required reviewers, and add the environment secret `CLAWHUB_TOKEN`. Use a dedicated token created in ClawHub Settings → API tokens, so it can be revoked without signing anyone out.
 
 Each release:
 

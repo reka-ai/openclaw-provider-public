@@ -6,7 +6,7 @@
     "setup": "npm ci --ignore-scripts && npm ci --ignore-scripts --prefix runtime && ln -sfn ../runtime/node_modules plugin/node_modules",
     "test": "npm test --prefix plugin && npm test --prefix runtime",
     "clawhub:validate": "clawhub package validate ./plugin --openclaw-version 2026.10.2 --out reports/clawhub",
-    "clawhub:dry-run": "clawhub package publish ./plugin --family code-plugin --owner reka --source-path plugin --dry-run --no-input",
+    "clawhub:dry-run": "clawhub package publish ./plugin --family code-plugin --owner reka-ai --source-path plugin --dry-run --no-input",
     "refresh-catalog": "node scripts/refresh-catalog.mjs"
   },
   "devDependencies": {
