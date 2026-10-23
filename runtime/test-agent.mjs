@@ -1,7 +1,9 @@
 // Native host end to end against a loopback stand-in for api.reka.ai: the live
 // /v1/models catalog, a tool call and a next-turn continuation. No Reka calls.
+// The dummy key must reach the stand-in API but never OpenClaw's files or output.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { cliJson, isolatedProfile, plugin, runtime, snapshotIds } from './harness.mjs';
@@ -14,6 +16,7 @@ const listing = {
     { id: 'paused-model', object: 'model', created: 3, owned_by: 'reka', supported_features: ['tools'], is_ready: false },
   ],
 };
+const KEY = 'offline-mock-key';
 const listingRequests = [];
 const requests = [];
 const server = createServer(async (req, res) => {
@@ -29,7 +32,7 @@ const server = createServer(async (req, res) => {
     return;
   }
   const body = JSON.parse(raw);
-  requests.push({ authorization: req.headers.authorization === 'Bearer offline-mock-key', body });
+  requests.push({ authorization: req.headers.authorization === `Bearer ${KEY}`, body });
   const hadToolResult = body.messages.some((message) => message.role === 'tool');
   const isContinuation = body.messages.some((message) => message.role === 'user' && JSON.stringify(message.content).includes('REPLAY_OK'));
   const delta = hadToolResult
@@ -63,8 +66,9 @@ const profile = isolatedProfile('agent', (state) => ({
   } },
   tools: { profile: 'minimal', allow: ['session_status'], deny: ['gateway'] },
   skills: { allowBundled: [] }, browser: { enabled: false }, cron: { enabled: false },
-}), { REKA_API_KEY: 'offline-mock-key' });
+}), { REKA_API_KEY: KEY });
 
+const outputs = [];
 /** Async spawn: the loopback server shares this event loop. */
 function openclaw(args) {
   return new Promise((resolve, reject) => {
@@ -76,6 +80,7 @@ function openclaw(args) {
     child.on('error', reject);
     child.on('close', (code) => {
       clearTimeout(timer);
+      outputs.push(stdout, stderr);
       if (code === 0) resolve(stdout);
       else reject(new Error(`openclaw ${args.join(' ')} exited ${code}:\n${stderr}\n${stdout}`));
     });
@@ -88,7 +93,7 @@ try {
   // Starter models (bundled snapshot) plus the account's ready live models.
   const expected = [...new Set([...snapshotIds(), 'qwen3.8-27b', 'live-only-model'])].map((id) => `reka/${id}`).sort();
   assert.deepEqual(catalog.models.map((model) => model.key).sort(), expected, 'Live models must join the starter list; paused ones must not');
-  assert.ok(listingRequests.length >= 1 && listingRequests.every((request) => request.authorization === 'Bearer offline-mock-key'));
+  assert.ok(listingRequests.length >= 1 && listingRequests.every((request) => request.authorization === `Bearer ${KEY}`));
 
   const first = await turn('Call session_status, then give a one sentence confirmation.');
   assert.equal(requests.length, 2, 'Expected exactly one tool call and one final response');
@@ -124,7 +129,15 @@ try {
   assert.ok(dynamic.length >= 1, 'The dynamic model made at least one request');
   assert.ok(dynamic.every((request) => request.authorization && request.body.model === 'live-only-model'));
   assert.ok(dynamic.every((request) => !('reasoning_effort' in request.body)), 'live-only-model declares no reasoning support');
+
+  // The key was sent as a bearer token above. It must not be written anywhere
+  // under the profile (config, state databases, transcripts) or printed.
+  const files = readdirSync(profile.state, { recursive: true }).map((name) => path.join(profile.state, name)).filter((file) => statSync(file).isFile());
+  assert.ok(files.length > 0, 'Expected OpenClaw to write profile state');
+  const leaked = files.filter((file) => readFileSync(file).includes(KEY)).map((file) => path.relative(profile.state, file));
+  assert.deepEqual(leaked, [], 'The API key was written to disk');
+  assert.ok(outputs.length > 0 && outputs.every((output) => !output.includes(KEY)), 'The API key was printed');
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }
-console.log(`PASS: live /v1/models catalog, native tool round-trip and continuation; ${listingRequests.length} listing and ${requests.length} chat requests, all loopback.`);
+console.log(`PASS: live /v1/models catalog, native tool round-trip and continuation; ${listingRequests.length} listing and ${requests.length} chat requests, all loopback; key never written or printed.`);
