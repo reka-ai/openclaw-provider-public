@@ -90,7 +90,9 @@ test("/v1/models rows map with contract defaults and only usable models", () => 
   assert.equal(models[0].name, "DeepSeek 4 Flash (recommended)");
   assert.equal(models[0].contextWindow, 1048576);
   assert.equal(models[0].maxTokens, 8192);
-  assert.deepEqual(models[0].cost, { input: 0.1, output: 0.4, cacheRead: 0, cacheWrite: 0 });
+  // No cache price ("0"): Reka bills cached prompt tokens at the input rate.
+  assert.deepEqual(models[0].cost, { input: 0.1, output: 0.4, cacheRead: 0.1, cacheWrite: 0 });
+  assert.deepEqual(models[1].cost, { input: 0.2, output: 2.5, cacheRead: 0.02, cacheWrite: 0 });
   assert.deepEqual(models[1].input, ["text", "image"]);
   // Every listing field but id is optional; missing ones get safe defaults.
   const bare = models[2];
