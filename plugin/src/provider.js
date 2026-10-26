@@ -1,8 +1,14 @@
 import { createProviderApiKeyAuthMethod, isNonSecretApiKeyMarker } from "openclaw/plugin-sdk/provider-auth";
 import { API_KEY_ENV, DEFAULT_MODEL, PROVIDER_ID, catalogRows, loadModels, resolveBaseUrl, resolveKnownModel, snapshotModels } from "./catalog.js";
+import { fetchRekaUsage, resolveCreditsUrl } from "./usage.js";
 
 // Env var names, including custom ones the SDK's marker list does not know.
 const ENV_VAR_NAME = /^[A-Z][A-Z0-9_]*$/;
+
+/** A real secret, not a marker such as the env var name. */
+function isUsableKey(candidate) {
+  return Boolean(candidate) && candidate !== API_KEY_ENV && !ENV_VAR_NAME.test(candidate) && !isNonSecretApiKeyMarker(candidate);
+}
 
 /**
  * `apiKey` may be a marker such as the env var name, which the runtime resolves
@@ -12,13 +18,13 @@ const ENV_VAR_NAME = /^[A-Z][A-Z0-9_]*$/;
 function resolveCredentials(ctx) {
   const { apiKey, discoveryApiKey } = ctx.resolveProviderApiKey(PROVIDER_ID);
   const candidate = discoveryApiKey ?? apiKey;
-  const usable = candidate && candidate !== API_KEY_ENV && !ENV_VAR_NAME.test(candidate) && !isNonSecretApiKeyMarker(candidate);
-  return { apiKey, listingKey: usable ? candidate : undefined };
+  return { apiKey, listingKey: isUsableKey(candidate) ? candidate : undefined };
 }
 
 export function createRekaProvider(pluginConfig = {}) {
   // Validate before registration so a malformed override cannot silently use the live service.
   const baseUrl = resolveBaseUrl(pluginConfig);
+  const creditsUrl = resolveCreditsUrl(baseUrl);
   const wizardSetup = {
     choiceId: "reka-api-key",
     choiceLabel: "Reka API key",
@@ -85,6 +91,16 @@ export function createRekaProvider(pluginConfig = {}) {
       if (ctx.provider && ctx.provider !== PROVIDER_ID) return null;
       const model = resolveKnownModel(baseUrl, ctx.modelId);
       return model ? { ...model, provider: PROVIDER_ID, api: "openai-completions", baseUrl } : null;
+    },
+    // `openclaw status --usage`: the key that runs inference also reads its own
+    // account's balance and Reka Pass. Free; no inference call.
+    async resolveUsageAuth(ctx) {
+      const apiKey = ctx.resolveApiKeyFromConfigAndStore({ envDirect: [ctx.env?.[API_KEY_ENV]] });
+      return isUsableKey(apiKey) ? { token: apiKey } : null;
+    },
+    fetchUsageSnapshot(ctx) {
+      // ctx.fetchFn carries OpenClaw's deadline and abort signal.
+      return fetchRekaUsage({ creditsUrl, apiKey: ctx.token, fetchFn: ctx.fetchFn });
     },
   };
 }

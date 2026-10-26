@@ -5,6 +5,7 @@
   "categories": ["models"],
   "description": "Reka open-weight models with API key onboarding and a model picker that follows your Reka account",
   "providers": ["reka"],
+  "contracts": { "usageProviders": ["reka"] },
   "setup": { "providers": [{ "id": "reka", "envVars": ["REKA_API_KEY"] }] },
   "providerAuthChoices": [{
     "provider": "reka",

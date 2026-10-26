@@ -2,6 +2,12 @@
 
 All notable changes to this plugin are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Your Reka balance in `openclaw status --usage` and OpenClaw's other usage views. With a Reka Pass, it also shows the share of this month's Pass credit left and the renewal date. Read with your API key from `https://developer.reka.ai/api/v1/credits`; free, not an inference call, and cached for a minute.
+
 ## [0.1.0] - Unreleased
 
 First public release.

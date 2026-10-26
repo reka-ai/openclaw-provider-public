@@ -1,6 +1,6 @@
 # Reka for OpenClaw
 
-Adds Reka as a provider in OpenClaw's API-key setup and model picker, with **DeepSeek 4 Flash** recommended for text and tools. Requests use OpenClaw's OpenAI-compatible chat transport at `https://api.reka.ai/v1`.
+Adds Reka as a provider in OpenClaw's API-key setup and model picker, with **DeepSeek 4 Flash** recommended for text and tools. Requests use OpenClaw's OpenAI-compatible chat transport at `https://api.reka.ai/v1`, and `openclaw status --usage` shows your Reka balance and Reka Pass.
 
 Requires **OpenClaw 2026.10.2 or newer**, on the Node version your OpenClaw release requires (the plugin itself runs on Node 24.16+ within 24.x, or 26.1+). Tested with OpenClaw 2026.10.2 and 2026.10.6. Published on ClawHub by Reka as `openclaw-reka-provider`.
 
@@ -24,12 +24,26 @@ The model list comes from your Reka account. When the Gateway starts, when your 
 - Context window, image input, prices (USD per million tokens) and reasoning support come from the listing. A model without listed prices shows a cost of 0. Output is capped at 8,192 tokens per request; this is not a spending limit. Video input is not used.
 - A snapshot of the list ships in `catalog/reka-models.json`. OpenClaw shows these starter models straight after sign-in, and the plugin uses them if Reka cannot be reached (timeout, error, or an unusable response). They stay listed until the next release, even if Reka pauses or retires one.
 
+## Balance and Reka Pass
+
+`openclaw status --usage`, and the other places OpenClaw shows provider usage, include your Reka balance. With a Reka Pass they also show how much of this month's Pass credit is left and when it renews:
+
+```
+Reka (Reka Pass)
+  Reka Pass: 71% left · resets Nov 21
+  Balance: $33.55
+  Reka Pass credit used: $8.85 / $30.00
+  Spent this billing period: $8.85
+```
+
+The plugin reads these with your API key from `https://developer.reka.ai/api/v1/credits`. Reading them is free and is not an inference call. Figures can be up to a minute old, and each answer is kept for a minute. The balance includes Pass credit. If Reka cannot be reached, the line reads `Usage unavailable`.
+
 ## Reasoning
 
 For models that list reasoning support, OpenClaw's thinking levels map to Reka's `reasoning_effort`: `off` sends `none`, and `minimal`, `low`, `medium`, `high` and `xhigh` pass through. Models without reasoning support never receive `reasoning_effort`. Setting `agents.defaults.thinkingDefault off` keeps replies fast.
 
 ## Local endpoint override
 
-For loopback testing only, `plugins.entries.reka.config.baseUrl` accepts an HTTP(S) URL on `127.0.0.1` or `[::1]`. Any other value must be `https://api.reka.ai/v1`. URLs with credentials, a query or a fragment are rejected. Do not use a real key with a test proxy.
+For loopback testing only, `plugins.entries.reka.config.baseUrl` accepts an HTTP(S) URL on `127.0.0.1` or `[::1]`. Any other value must be `https://api.reka.ai/v1`. URLs with credentials, a query or a fragment are rejected. With an override, the balance is read from `/api/v1/credits` on the same loopback address. Do not use a real key with a test proxy.
 
 See [provider plugins](https://docs.openclaw.ai/plugins/sdk-provider-plugins) and [publishing](https://docs.openclaw.ai/clawhub/publishing).

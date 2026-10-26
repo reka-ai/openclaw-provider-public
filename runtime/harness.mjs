@@ -65,7 +65,7 @@ export function packPlugin() {
   assert.equal(result.status, 0, `npm pack failed:\n${result.stderr}`);
   const [packed] = JSON.parse(result.stdout);
   assert.deepEqual(packed.files.map((file) => file.path).sort(), [
-    'CHANGELOG.md', 'LICENSE', 'README.md', 'assets/icon.png', 'catalog/reka-models.json', 'index.js', 'openclaw.plugin.json', 'package.json', 'src/catalog.js', 'src/provider.js',
+    'CHANGELOG.md', 'LICENSE', 'README.md', 'assets/icon.png', 'catalog/reka-models.json', 'index.js', 'openclaw.plugin.json', 'package.json', 'src/catalog.js', 'src/provider.js', 'src/usage.js',
   ]);
   return path.join(destination, packed.filename);
 }

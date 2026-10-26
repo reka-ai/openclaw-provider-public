@@ -1,5 +1,6 @@
 // Native host end to end against a loopback stand-in for api.reka.ai: the live
-// /v1/models catalog, a tool call and a next-turn continuation. No Reka calls.
+// /v1/models catalog, a tool call, a next-turn continuation and the balance and
+// Reka Pass in `status --usage`. No Reka calls.
 // The dummy key must reach the stand-in API but never OpenClaw's files or output.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -16,8 +17,15 @@ const listing = {
     { id: 'paused-model', object: 'model', created: 3, owned_by: 'reka', supported_features: ['tools'], is_ready: false },
   ],
 };
+const credits = {
+  object: 'credits',
+  available_usd: 33.55,
+  reka_pass: { status: 'current', credit_usd: 30, remaining_usd: 21.15, period_start: '2026-10-21T00:00:00Z', period_end: '2099-11-21T00:00:00Z', renews_at: '2099-11-21T00:00:00Z' },
+  period: { start: '2026-10-01', end: '2099-11-01', spend_usd: 8.85 },
+};
 const KEY = 'offline-mock-key';
 const listingRequests = [];
+const creditsRequests = [];
 const requests = [];
 const server = createServer(async (req, res) => {
   let raw = '';
@@ -25,6 +33,11 @@ const server = createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/v1/models') {
     listingRequests.push({ authorization: req.headers.authorization });
     res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(listing));
+    return;
+  }
+  if (req.method === 'GET' && req.url === '/api/v1/credits') {
+    creditsRequests.push({ authorization: req.headers.authorization });
+    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(credits));
     return;
   }
   if (req.url !== '/v1/chat/completions') {
@@ -93,6 +106,16 @@ try {
   // Starter models (bundled snapshot) plus the account's ready live models.
   const expected = [...new Set([...snapshotIds(), 'qwen3.8-27b', 'live-only-model'])].map((id) => `reka/${id}`).sort();
   assert.deepEqual(catalog.models.map((model) => model.key).sort(), expected, 'Live models must join the starter list; paused ones must not');
+
+  // `status --usage` reads the balance and Reka Pass with the account's own key.
+  const usage = cliJson(await openclaw(['status', '--usage', '--json'])).usage.providers.find((entry) => entry.provider === 'reka');
+  assert.equal(usage?.error, undefined, 'Reka usage must load');
+  assert.equal(usage.plan, 'Reka Pass');
+  assert.deepEqual(usage.windows, [{ label: 'Reka Pass', usedPercent: 29.5, resetAt: Date.parse('2099-11-21T00:00:00Z') }]);
+  assert.deepEqual(usage.billing.map((item) => [item.type, item.amount ?? item.used, item.limit]), [['balance', 33.55, undefined], ['budget', 8.85, 30], ['spend', 8.85, undefined]]);
+  const text = await openclaw(['status', '--usage']);
+  assert.match(text, /Reka \(Reka Pass\)\n\s+Reka Pass: 71% left · resets Nov 21\n\s+Balance: \$33\.55/);
+  assert.ok(creditsRequests.length >= 2 && creditsRequests.every((request) => request.authorization === `Bearer ${KEY}`), 'Usage must be read with the Reka key');
   assert.ok(listingRequests.length >= 1 && listingRequests.every((request) => request.authorization === `Bearer ${KEY}`));
 
   const first = await turn('Call session_status, then give a one sentence confirmation.');
@@ -140,4 +163,4 @@ try {
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }
-console.log(`PASS: live /v1/models catalog, native tool round-trip and continuation; ${listingRequests.length} listing and ${requests.length} chat requests, all loopback; key never written or printed.`);
+console.log(`PASS: live /v1/models catalog, native tool round-trip and continuation, Reka Pass usage; ${listingRequests.length} listing, ${creditsRequests.length} credits and ${requests.length} chat requests, all loopback; key never written or printed.`);
