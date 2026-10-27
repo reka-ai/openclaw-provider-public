@@ -3,7 +3,7 @@
 // The dummy key must reach the stand-in API but never OpenClaw's files or output.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { cliJson, isolatedProfile, plugin, runtime, snapshotIds } from './harness.mjs';
@@ -132,9 +132,15 @@ try {
 
   // The key was sent as a bearer token above. It must not be written anywhere
   // under the profile (config, state databases, transcripts) or printed.
-  const files = readdirSync(profile.state, { recursive: true }).map((name) => path.join(profile.state, name)).filter((file) => statSync(file).isFile());
-  assert.ok(files.length > 0, 'Expected OpenClaw to write profile state');
-  const leaked = files.filter((file) => readFileSync(file).includes(KEY)).map((file) => path.relative(profile.state, file));
+  // Entries can vanish mid-scan (SQLite journals, locks), so skip those.
+  const files = readdirSync(profile.state, { recursive: true }).map((name) => path.join(profile.state, name)).filter((file) => {
+    try { return lstatSync(file).isFile(); } catch (error) { if (error.code === 'ENOENT') return false; throw error; }
+  });
+  const written = files.map((file) => path.relative(profile.state, file));
+  assert.ok(written.some((file) => file.endsWith('.sqlite')), 'Expected OpenClaw to write its state database under the profile');
+  assert.ok(written.includes(path.join('logs', 'openclaw.log')), 'Expected OpenClaw to write its log under the profile');
+  const leaked = files.filter((file) => { try { return readFileSync(file).includes(KEY); } catch (error) { if (error.code === 'ENOENT') return false; throw error; } })
+    .map((file) => path.relative(profile.state, file));
   assert.deepEqual(leaked, [], 'The API key was written to disk');
   assert.ok(outputs.length > 0 && outputs.every((output) => !output.includes(KEY)), 'The API key was printed');
 } finally {

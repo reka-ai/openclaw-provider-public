@@ -53,6 +53,8 @@ jobs:
         run: npm test
       - name: Plugin Inspector
         run: npx clawhub package validate ./plugin --openclaw-version 2026.10.6 --out reports/release
+      - name: Plugin Inspector against the oldest supported OpenClaw
+        run: npx clawhub package validate ./plugin --openclaw-version 2026.10.2 --out reports/release-minimum
       - name: Publish
         env:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}

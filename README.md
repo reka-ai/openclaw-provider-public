@@ -21,7 +21,7 @@ openclaw plugins install clawhub:openclaw-reka-provider
 
 ## Development
 
-Use Node 24.22.1+ (within 24.x) or 26.12.1+, which the pinned OpenClaw 2026.10.6 requires. CI runs Node 24 and 26.12.1 on Linux and macOS, and repeats the suites on OpenClaw 2026.10.2, the oldest version the plugin supports.
+Use Node 24.22.1+ (within 24.x) or 26.12.1+, which the pinned OpenClaw 2026.10.6 requires. CI runs Node 24.22.1 and 26.12.1 on Linux and macOS, and repeats the suites on OpenClaw 2026.10.2, the oldest version the plugin supports.
 
 ```sh
 npm run setup              # npm ci --ignore-scripts (root ClawHub CLI, then the pinned host); links plugin/node_modules

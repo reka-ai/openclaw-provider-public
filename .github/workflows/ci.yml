@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: ["24", "26.12.1"]
+        node: ["24.22.1", "26.12.1"]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     steps:
@@ -50,7 +50,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
-          node-version: "24"
+          node-version: "24.22.1"
           cache: npm
           cache-dependency-path: runtime/package-lock.json
       # Swaps the locked host for the oldest version package.json claims to support.
@@ -62,6 +62,8 @@ jobs:
       - name: Plugin unit and transport tests
         run: npm test --prefix plugin
       - name: Host suites on OpenClaw 2026.10.2 (loopback only, dummy keys)
+        env:
+          REKA_EXPECTED_OPENCLAW: "2026.10.2"
         run: npm test --prefix runtime
 
   clawhub:

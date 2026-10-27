@@ -1,7 +1,7 @@
 // Loads the plugin from source in the pinned host. The endpoint is a closed
 // loopback port, so the live /v1/models read fails and the snapshot is used.
 import assert from 'node:assert/strict';
-import { cliJson, hostVersion, isolatedProfile, openclaw, plugin, snapshotIds } from './harness.mjs';
+import { cliJson, expectedHostVersion, hostVersion, isolatedProfile, openclaw, plugin, snapshotIds } from './harness.mjs';
 
 const profile = isolatedProfile('host', () => ({
   gateway: { mode: 'local', bind: 'loopback' },
@@ -14,6 +14,7 @@ const profile = isolatedProfile('host', () => ({
   agents: { defaults: { model: { primary: 'reka/deepseek4-flash' } } },
 }), { REKA_API_KEY: 'offline-test-key-not-a-secret' });
 
+assert.equal(hostVersion, expectedHostVersion, `runtime/node_modules holds OpenClaw ${hostVersion}, not ${expectedHostVersion}; run npm run setup`);
 assert.ok(openclaw(profile, ['--version']).includes(hostVersion), `Wrapper did not run OpenClaw ${hostVersion}`);
 cliJson(openclaw(profile, ['config', 'validate', '--json']));
 const inspection = cliJson(openclaw(profile, ['plugins', 'inspect', 'reka', '--runtime', '--json']));

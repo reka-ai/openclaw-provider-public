@@ -13,6 +13,9 @@ export const plugin = path.join(project, 'plugin');
 
 /** OpenClaw version installed in runtime/node_modules: the locked pin, or the one CI swaps in. */
 export const hostVersion = JSON.parse(readFileSync(path.join(runtime, 'node_modules', 'openclaw', 'package.json'), 'utf8')).version;
+// The pinned host, unless a CI job deliberately swaps in another version.
+export const expectedHostVersion = process.env.REKA_EXPECTED_OPENCLAW
+  ?? JSON.parse(readFileSync(path.join(runtime, 'package.json'), 'utf8')).dependencies.openclaw;
 
 /** Model ids the bundled snapshot offers (tool-capable rows). */
 export function snapshotIds() {
@@ -24,7 +27,11 @@ export function snapshotIds() {
 export function isolatedProfile(name, config, extraEnv = {}) {
   const state = mkdtempSync(path.join(tmpdir(), `reka-openclaw-${name}-`));
   const configPath = path.join(state, 'openclaw.json');
-  writeFileSync(configPath, JSON.stringify(config(state), null, 2), { mode: 0o600 });
+  // OpenClaw logs to a shared /tmp/openclaw file by default; keep each
+  // profile's log inside it, where the leak checks can read it.
+  const settings = config(state);
+  settings.logging = { file: path.join(state, 'logs', 'openclaw.log'), ...settings.logging };
+  writeFileSync(configPath, JSON.stringify(settings, null, 2), { mode: 0o600 });
   const env = {
     PATH: `${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH}`,
     HOME: state,
