@@ -19,7 +19,7 @@ Reka publishes the plugin on ClawHub as `openclaw-reka-provider`:
 openclaw plugins install clawhub:openclaw-reka-provider
 ```
 
-OpenClaw asks you to accept the plugin's capabilities; review and accept. It prints `Installed plugin: reka` when it finishes. If a Gateway is already running, restart it through its existing service owner so it loads the plugin. For an OpenClaw-managed service, use `openclaw gateway restart`. [Plugin installation](https://docs.openclaw.ai/cli/plugins/install)
+OpenClaw asks two questions: `Proceed with installation? [y/N]` after ClawHub's security audit of the plugin, then `Accept these capabilities and install "reka"? [y/N]` after listing what the plugin adds (one provider, `reka`). Review each, type `y` and press Enter; Enter alone cancels. It prints `Installed plugin: reka` when it finishes. If a Gateway is already running, restart it through its existing service owner so it loads the plugin. For an OpenClaw-managed service, use `openclaw gateway restart`. [Plugin installation](https://docs.openclaw.ai/cli/plugins/install)
 
 <details>
 <summary>Install from source instead (before the first ClawHub release, or to test a branch)</summary>
@@ -68,7 +68,15 @@ openclaw models status
 
 ## 5. Open a chat
 
-If no Gateway is running, start one and leave the terminal open:
+To chat in this terminal, with nothing else running:
+
+```sh
+openclaw chat
+```
+
+The status line shows **deepseek4-flash**. Type `/exit` to leave.
+
+To chat in the browser instead, start a Gateway if none is running, and leave the terminal open:
 
 ```sh
 openclaw gateway
