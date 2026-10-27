@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: ["24", "26.8.1"]
+        node: ["24.22.1", "26.12.1"]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     steps:
@@ -40,6 +40,32 @@ jobs:
       - name: Pinned-host suites (loopback only, dummy keys)
         run: npm test --prefix runtime
 
+  minimum-openclaw:
+    name: Test (oldest supported OpenClaw, 2026.10.2)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "24.22.1"
+          cache: npm
+          cache-dependency-path: runtime/package-lock.json
+      # Swaps the locked host for the oldest version package.json claims to support.
+      # This job has no secrets and a read-only token; lifecycle scripts stay off.
+      - name: Install, then swap in OpenClaw 2026.10.2
+        run: |
+          npm run setup
+          npm install --ignore-scripts --no-save --prefix runtime openclaw@2026.10.2
+      - name: Plugin unit and transport tests
+        run: npm test --prefix plugin
+      - name: Host suites on OpenClaw 2026.10.2 (loopback only, dummy keys)
+        env:
+          REKA_EXPECTED_OPENCLAW: "2026.10.2"
+        run: npm test --prefix runtime
+
   clawhub:
     name: ClawHub checks
     runs-on: ubuntu-latest
@@ -50,19 +76,21 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
-          node-version: "26.8.1"
+          node-version: "26.12.1"
           cache: npm
           cache-dependency-path: package-lock.json
       - name: Install the locked ClawHub CLI
         run: npm ci --ignore-scripts
       # Static checks only: the inspector does not run plugin code here.
-      - name: Plugin Inspector against the tested OpenClaw
-        run: npx clawhub package validate ./plugin --openclaw-version 2026.10.2 --out reports/tested
+      - name: Plugin Inspector against the pinned OpenClaw
+        run: npx clawhub package validate ./plugin --openclaw-version 2026.10.6 --out reports/tested
+      - name: Plugin Inspector against the oldest supported OpenClaw
+        run: npx clawhub package validate ./plugin --openclaw-version 2026.10.2 --out reports/minimum
       - name: Plugin Inspector against the latest OpenClaw (advisory)
         continue-on-error: true
         run: npx clawhub package validate ./plugin --openclaw-version latest --out reports/latest
       - name: Publish dry run (nothing is uploaded)
         run: >-
-          npx clawhub package publish ./plugin --family code-plugin --owner reka
+          npx clawhub package publish ./plugin --family code-plugin --owner reka-ai
           --source-repo "$GITHUB_REPOSITORY" --source-commit "$GITHUB_SHA" --source-ref "$GITHUB_REF_NAME"
           --source-path plugin --dry-run --no-input

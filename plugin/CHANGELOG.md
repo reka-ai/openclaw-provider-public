@@ -2,7 +2,7 @@
 
 All notable changes to this plugin are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-10-27
 
 First public release.
 
@@ -13,4 +13,4 @@ First public release.
 - A bundled snapshot of the list for starter models and offline fallback.
 - Dynamic model resolution: any well-formed `reka/<model-id>` works by id, including models Reka lists after this release.
 - Per-model reasoning support: `reasoning_effort` is sent only to models that declare reasoning, using Reka's documented levels.
-- Supports OpenClaw 2026.10.2 and newer, on Node 24.16+ (within 24.x) or 26.1+.
+- Supports OpenClaw 2026.10.2 and newer; tested with 2026.10.2 and 2026.10.6. The plugin runs on Node 24.16+ (within 24.x) or 26.1+; newer OpenClaw releases can require a newer Node.

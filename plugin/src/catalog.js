@@ -55,7 +55,9 @@ export function toModel(row) {
     cost: {
       input: perMillion(row.pricing?.prompt),
       output: perMillion(row.pricing?.completion),
-      cacheRead: perMillion(row.pricing?.input_cache_read),
+      // Reka bills cached prompt tokens at the input rate when a model has no
+      // cache price, which /v1/models lists as "0".
+      cacheRead: perMillion(row.pricing?.input_cache_read) || perMillion(row.pricing?.prompt),
       cacheWrite: 0,
     },
     contextWindow: positiveInt(row.context_length) ?? 32768,

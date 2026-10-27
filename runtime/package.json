@@ -17,6 +17,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "openclaw": "2026.10.2"
+    "openclaw": "2026.10.6"
   }
 }

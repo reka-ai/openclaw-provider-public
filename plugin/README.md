@@ -2,7 +2,7 @@
 
 Adds Reka as a provider in OpenClaw's API-key setup and model picker, with **DeepSeek 4 Flash** recommended for text and tools. Requests use OpenClaw's OpenAI-compatible chat transport at `https://api.reka.ai/v1`.
 
-Requires **OpenClaw 2026.10.2 or newer** and Node **24.16+ within 24.x, or 26.1+**. Published on ClawHub by Reka as `openclaw-reka-provider`.
+Requires **OpenClaw 2026.10.2 or newer**, on the Node version your OpenClaw release requires (the plugin itself runs on Node 24.16+ within 24.x, or 26.1+). Tested with OpenClaw 2026.10.2 and 2026.10.6. Published on ClawHub by Reka as `openclaw-reka-provider`.
 
 ## Install and sign in
 
@@ -12,9 +12,9 @@ openclaw models auth login --provider reka --method api-key --set-default
 openclaw config set agents.defaults.thinkingDefault off
 ```
 
-OpenClaw asks you to accept the plugin's permissions. Wait for the masked **Enter your Reka API key** prompt before pasting your key; get one from [Reka's developer portal](https://developer.reka.ai). `--set-default` makes DeepSeek 4 Flash the default model. The full walkthrough, including installing from source, is in the repository's [docs/SETUP.md](https://github.com/reka-ai/openclaw-provider-public/blob/main/docs/SETUP.md).
+OpenClaw asks two questions, first after ClawHub's security audit and then after listing the plugin's capabilities: type `y` and press Enter at each. Wait for the masked **Enter your Reka API key** prompt before pasting your key; get one from [Reka's developer portal](https://developer.reka.ai). `--set-default` makes DeepSeek 4 Flash the default model. The full walkthrough, including installing from source, is in the repository's [docs/SETUP.md](https://github.com/reka-ai/openclaw-provider-public/blob/main/docs/SETUP.md).
 
-Use the model picker, or send `/model reka/<model-id>` to switch the current chat. `openclaw models set` changes the default for new chats.
+Then run `openclaw chat` to chat in the terminal. Use the model picker, or send `/model reka/<model-id>` to switch the current chat. `openclaw models set` changes the default for new chats.
 
 ## Models
 

@@ -47,7 +47,7 @@ jobs:
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         if: steps.guard.outputs.enabled == 'true'
         with:
-          node-version: "26.8.1"
+          node-version: "26.12.1"
           cache: npm
           cache-dependency-path: runtime/package-lock.json
       - name: Refresh snapshot from /v1/models

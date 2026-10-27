@@ -15,13 +15,13 @@ openclaw plugins install clawhub:openclaw-reka-provider
 | Path | What it is |
 | --- | --- |
 | `plugin/` | The publishable package: `index.js`, `src/`, `catalog/reka-models.json` (bundled snapshot), manifest and tests |
-| `runtime/` | A pinned OpenClaw host (`openclaw@2026.10.2`, locked) and the suites that install and run the plugin in it |
+| `runtime/` | A pinned OpenClaw host (`openclaw@2026.10.6`, locked) and the suites that install and run the plugin in it |
 | `scripts/refresh-catalog.mjs` | Rewrites the bundled snapshot from `GET /v1/models` |
 | `docs/` | The setup guide and its screenshots |
 
 ## Development
 
-Use Node 24.16+ (within 24.x) or 26.1+. CI runs Node 24 and 26.8.1 on Linux and macOS.
+Use Node 24.22.1+ (within 24.x) or 26.12.1+, which the pinned OpenClaw 2026.10.6 requires. CI runs Node 24.22.1 and 26.12.1 on Linux and macOS, and repeats the suites on OpenClaw 2026.10.2, the oldest version the plugin supports.
 
 ```sh
 npm run setup              # npm ci --ignore-scripts (root ClawHub CLI, then the pinned host); links plugin/node_modules
@@ -50,12 +50,12 @@ npm run refresh-catalog
 
 ## Releasing
 
-Releases publish to ClawHub as `openclaw-reka-provider` under the `reka` owner, from `.github/workflows/release.yml`. ClawHub keeps a new release hidden until its security checks and verification finish.
+Releases publish to ClawHub as `openclaw-reka-provider` under the `reka-ai` owner, from `.github/workflows/release.yml`. ClawHub keeps a new release hidden until its security checks and verification finish.
 
 One-time setup:
 
-1. A maintainer signs in with their own account (`npx clawhub login`) and creates the org publisher: `npx clawhub publisher create reka --display-name "Reka"`. Add other maintainers to the org on ClawHub instead of sharing a login.
-2. In this repository's settings, create the `release` environment with required reviewers, and add the environment secret `CLAWHUB_TOKEN` (from `npx clawhub token`).
+1. A maintainer signs in with their own account (`npx clawhub login`) and creates the org publisher: `npx clawhub publisher create reka-ai --display-name "Reka"`. Add other maintainers to the org on ClawHub instead of sharing a login.
+2. In this repository's settings, create the `release` environment with required reviewers, and add the environment secret `CLAWHUB_TOKEN`. Use a dedicated token created in ClawHub Settings → API tokens, so it can be revoked without signing anyone out.
 
 Each release:
 
