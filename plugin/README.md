@@ -28,6 +28,14 @@ The model list comes from your Reka account. When the Gateway starts, when your 
 
 For models that list reasoning support, OpenClaw's thinking levels map to Reka's `reasoning_effort`: `off` sends `none`, and `minimal`, `low`, `medium`, `high` and `xhigh` pass through. Models without reasoning support never receive `reasoning_effort`. Setting `agents.defaults.thinkingDefault off` keeps replies fast.
 
+## Batch jobs
+
+For large jobs that can wait, such as labelling a dataset, generating content in bulk or overnight code sweeps, Reka's [Batch API](https://developer.reka.ai/batch) runs `glm5.3-flash` and `qwen3.8-27b` at 50% of live rates, with results within 24 hours. It is not part of this plugin. Install the `reka-batch` skill, which adds a `/reka-batch` command and needs only `python3` and `REKA_API_KEY`:
+
+```sh
+openclaw skills install @reka-ai/reka-batch
+```
+
 ## Local endpoint override
 
 For loopback testing only, `plugins.entries.reka.config.baseUrl` accepts an HTTP(S) URL on `127.0.0.1` or `[::1]`. Any other value must be `https://api.reka.ai/v1`. URLs with credentials, a query or a fragment are rejected. Do not use a real key with a test proxy.
